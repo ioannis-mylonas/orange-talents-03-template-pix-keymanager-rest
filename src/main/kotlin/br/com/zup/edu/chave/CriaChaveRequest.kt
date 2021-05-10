@@ -1,5 +1,6 @@
 package br.com.zup.edu.chave
 
+import br.com.zup.edu.CreateKeyRequest
 import br.com.zup.edu.TipoChave
 import br.com.zup.edu.TipoConta
 import com.fasterxml.jackson.annotation.JsonProperty
@@ -16,4 +17,13 @@ class CriaChaveRequest(
     chave: String?
 ) {
     @JsonProperty @field:Size(max = 77) val chave: String = chave ?: ""
+
+    fun converte(): CreateKeyRequest {
+        return CreateKeyRequest.newBuilder()
+            .setTipoChave(tipoChave)
+            .setChave(chave)
+            .setTipoConta(tipoConta)
+            .setIdCliente(idCliente)
+            .build()
+    }
 }

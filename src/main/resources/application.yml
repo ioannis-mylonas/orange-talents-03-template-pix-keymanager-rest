@@ -1,3 +1,7 @@
 micronaut:
   application:
     name: keymanagerRest
+keymanager:
+  server-url: ${KEYMANAGER_SERVER:`http://localhost:50051`}
+grpc.client:
+  plaintext: true
