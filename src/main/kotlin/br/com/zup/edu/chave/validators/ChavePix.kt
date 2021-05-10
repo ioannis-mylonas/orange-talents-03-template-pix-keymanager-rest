@@ -28,7 +28,7 @@ class ChavePixValidator(@Inject val validators: Collection<PixValidator>):
         context: ConstraintValidatorContext
     ): Boolean {
         validators.forEach {
-            if (it.supports(value.tipoChave) && !it.validate(value)) {
+            if (it.supports(value.tipoChave.valor) && !it.validate(value)) {
                 return false
             }
         }
