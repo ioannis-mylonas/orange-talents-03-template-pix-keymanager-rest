@@ -32,7 +32,13 @@ class ChaveController(
     @Delete("/{idPix}")
     fun exclui(@PathVariable id: UUID, @PathVariable idPix: Long): HttpResponse<*> {
         return try {
-            rpc.delete(DeleteKeyRequest.newBuilder().setIdCliente(id.toString()).setIdPix(idPix).build())
+            rpc.delete(
+                DeleteKeyRequest.newBuilder()
+                .setIdCliente(id.toString())
+                .setIdPix(idPix)
+                .build()
+            )
+            
             return HttpResponse.ok<Any>()
         } catch (e: StatusRuntimeException) {
             statusMapper.map(e)
@@ -42,7 +48,13 @@ class ChaveController(
     @Get("/{idPix}")
     fun detalhes(@PathVariable id: UUID, @PathVariable idPix: Long): HttpResponse<*> {
         return try {
-            val response = rpc.get(GetKeyRequest.newBuilder().setIdCliente(id.toString()).setIdPix(idPix).build())
+            val response = rpc.get(
+                GetKeyRequest.newBuilder()
+                .setIdCliente(id.toString())
+                .setIdPix(idPix)
+                .build()
+            )
+
             HttpResponse.ok(Chave(response))
         } catch (e: StatusRuntimeException) {
             statusMapper.map(e)
@@ -52,7 +64,12 @@ class ChaveController(
     @Get
     fun list(@PathVariable id: UUID): HttpResponse<*> {
         return try {
-            val response = rpc.list(ListKeyRequest.newBuilder().setIdCliente(id.toString()).build())
+            val response = rpc.list(
+                ListKeyRequest.newBuilder()
+                    .setIdCliente(id.toString())
+                    .build()
+            )
+
             HttpResponse.ok(response.chavesList.map { Chave(it) })
         } catch (e: StatusRuntimeException) {
             statusMapper.map(e)
