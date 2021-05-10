@@ -1,7 +1,9 @@
 micronaut:
   application:
     name: keymanagerRest
-keymanager:
-  server-url: ${KEYMANAGER_SERVER:`http://localhost:50051`}
-grpc.client:
-  plaintext: true
+grpc:
+  channels:
+    keymanager:
+      address: '${KEYMANAGER_SERVER:`localhost:50051`}'
+      plaintext: true
+      max-retry-attempts: 10

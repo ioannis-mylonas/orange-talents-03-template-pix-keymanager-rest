@@ -7,18 +7,20 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
+import java.util.*
 import javax.inject.Inject
 import javax.validation.Valid
 
-@Controller("/api/chaves")
+@Controller("/api/clientes/{id}/pix")
 class ChaveController(
         @Inject val rpc: KeymanagerGRPCServiceGrpc.KeymanagerGRPCServiceBlockingStub
     ) {
     @Post
-    fun cadastra(@Body @Valid request: CriaChaveRequest): HttpResponse<*> {
+    fun cadastra(@Body @Valid request: CriaChaveRequest, @PathVariable id: UUID): HttpResponse<*> {
         return try {
-            val response = rpc.cria(request.converte())
+            val response = rpc.cria(request.converte(id))
             HttpResponse.ok<Any>("PIX ID: ${response.idPix}")
         } catch (e: StatusRuntimeException) {
             when (e.status.code) {
