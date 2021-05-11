@@ -47,7 +47,7 @@ class ChaveController(
     }
 
     @Get("/{idPix}")
-    fun detalhes(@PathVariable id: UUID, @PathVariable idPix: Long): HttpResponse<*> {
+    fun detalhes(@PathVariable id: UUID, @PathVariable idPix: Long): HttpResponse<Any> {
         return try {
             val response = rpc.get(
                 GetKeyRequest.newBuilder()
@@ -63,7 +63,7 @@ class ChaveController(
     }
 
     @Get
-    fun list(@PathVariable id: UUID): HttpResponse<*> {
+    fun list(@PathVariable id: UUID): HttpResponse<Any> {
         return try {
             val response = rpc.list(
                 ListKeyRequest.newBuilder()

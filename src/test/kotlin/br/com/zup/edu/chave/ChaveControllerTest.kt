@@ -1,7 +1,8 @@
 package br.com.zup.edu.chave
 
-import br.com.zup.edu.CreateKeyResponse
-import br.com.zup.edu.KeymanagerGRPCServiceGrpc
+import br.com.zup.edu.*
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.grpc.Status
 import io.micronaut.context.annotation.Factory
 import io.micronaut.context.annotation.Replaces
@@ -15,14 +16,15 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EmptySource
 import org.junit.jupiter.params.provider.NullAndEmptySource
 import org.junit.jupiter.params.provider.ValueSource
 import org.mockito.BDDMockito
 import org.mockito.Mockito
+import java.time.LocalDateTime
 import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.random.Random
 
 @MicronautTest
 internal class ChaveControllerTest {
@@ -32,6 +34,9 @@ internal class ChaveControllerTest {
 
     @Inject
     lateinit var rpc: KeymanagerGRPCServiceGrpc.KeymanagerGRPCServiceBlockingStub
+
+    @Inject
+    lateinit var mapper: ObjectMapper
 
     @AfterEach
     fun teardown() {
@@ -46,7 +51,8 @@ internal class ChaveControllerTest {
 
         val response = CreateKeyResponse.newBuilder().setIdPix(1L).build()
         BDDMockito.given(rpc.cria(Mockito.any())).willReturn(response)
-        val result = http.toBlocking().exchange<CriaChaveRequest, Any>(HttpRequest.POST("/api/clientes/${idCliente}/pix", request))
+        val result = http.toBlocking()
+            .exchange<CriaChaveRequest, Any>(HttpRequest.POST("/api/clientes/${idCliente}/pix", request))
 
         assertEquals(HttpStatus.CREATED, result.status)
         assertTrue(result.headers.contains("Location"))
@@ -95,10 +101,197 @@ internal class ChaveControllerTest {
 
         val erro = assertThrows(HttpClientResponseException::class.java) {
             http.toBlocking()
-                .exchange<CriaChaveRequest, Any>(HttpRequest.POST("/api/clientes/${idCliente}/pix", request))
+                .exchange<CriaChaveRequest, Any>(HttpRequest.POST("/api/clientes/$idCliente/pix", request))
         }
 
         assertEquals(HttpStatus.BAD_REQUEST.code, erro.status.code)
+    }
+
+    @Test
+    fun `testa exclusao de chave`() {
+        val idCliente = UUID.randomUUID().toString()
+        val idPix = Random.nextLong()
+        val response = http.toBlocking()
+            .exchange<Unit, Unit>(HttpRequest.DELETE("/api/clientes/$idCliente/pix/$idPix"))
+
+        assertEquals(HttpStatus.OK.code, response.status.code)
+    }
+
+    @Test
+    fun `testa falha exclusao chave inexistente`() {
+        val idCliente = UUID.randomUUID().toString()
+        val idPix = Random.nextLong()
+
+        BDDMockito.given(rpc.delete(Mockito.any())).willThrow(Status.NOT_FOUND.asRuntimeException())
+
+        val erro = assertThrows(HttpClientResponseException::class.java) {
+            http.toBlocking()
+                .exchange<Unit, Unit>(HttpRequest.DELETE("/api/clientes/$idCliente/pix/$idPix"))
+        }
+
+        assertEquals(HttpStatus.NOT_FOUND.code, erro.status.code)
+    }
+
+    @Test
+    fun `testa falha exclusao chave sem permissao`() {
+        val idCliente = UUID.randomUUID().toString()
+        val idPix = Random.nextLong()
+
+        BDDMockito.given(rpc.delete(Mockito.any())).willThrow(Status.PERMISSION_DENIED.asRuntimeException())
+
+        val erro = assertThrows(HttpClientResponseException::class.java) {
+            http.toBlocking()
+                .exchange<Unit, Unit>(HttpRequest.DELETE("/api/clientes/$idCliente/pix/$idPix"))
+        }
+
+        assertEquals(HttpStatus.FORBIDDEN.code, erro.status.code)
+    }
+
+    @Test
+    fun `testa falha exclusao id invalido`() {
+        val idCliente = UUID.randomUUID().toString()
+        val idPix = "abcd"
+
+        BDDMockito.given(rpc.delete(Mockito.any())).willThrow(Status.PERMISSION_DENIED.asRuntimeException())
+
+        val erro = assertThrows(HttpClientResponseException::class.java) {
+            http.toBlocking()
+                .exchange<Unit, Unit>(HttpRequest.DELETE("/api/clientes/$idCliente/pix/$idPix"))
+        }
+
+        assertEquals(HttpStatus.BAD_REQUEST.code, erro.status.code)
+    }
+
+    @Test
+    fun `testa busca detalhes chave especifica`() {
+        val idCliente = UUID.randomUUID().toString()
+        val idPix = Random.nextLong()
+
+        val response = GetKeyResponse.newBuilder()
+            .setChave(UUID.randomUUID().toString())
+            .setCriadaEm(LocalDateTime.now().toString())
+            .setIdCliente(idCliente)
+            .setIdPix(idPix)
+            .setTipoChave(TipoChave.RANDOM)
+            .setTitular(
+                GetKeyResponse.Titular.newBuilder()
+                    .setNome("Nome")
+                    .setCpf("CPF")
+                    .build()
+            ).setInstituicao(
+                GetKeyResponse.Instituicao.newBuilder()
+                    .setTipoConta(TipoConta.CONTA_CORRENTE)
+                    .setNome("Instituição")
+                    .setConta("Conta")
+                    .setAgencia("Agencia")
+                    .build()
+            ).build()
+
+        BDDMockito.given(rpc.get(Mockito.any())).willReturn(response)
+
+        val result = http.toBlocking().retrieve("/api/clientes/$idCliente/pix/$idPix")
+        val key = mapper.readValue(result, Chave::class.java)
+
+        assertEquals(idPix, key.idPix)
+        assertEquals(idCliente, key.idCliente)
+    }
+
+    @Test
+    fun `testa falha busca nao encontra chave`() {
+        val idCliente = UUID.randomUUID().toString()
+        val idPix = Random.nextLong()
+
+        BDDMockito.given(rpc.get(Mockito.any())).willThrow(Status.NOT_FOUND.asRuntimeException())
+
+        val erro = assertThrows(HttpClientResponseException::class.java) {
+            http.toBlocking().retrieve("/api/clientes/$idCliente/pix/$idPix")
+        }
+
+        assertEquals(HttpStatus.NOT_FOUND.code, erro.status.code)
+    }
+
+    @Test
+    fun `testa falha busca chave sem permissao`() {
+        val idCliente = UUID.randomUUID().toString()
+        val idPix = Random.nextLong()
+
+        BDDMockito.given(rpc.get(Mockito.any())).willThrow(Status.PERMISSION_DENIED.asRuntimeException())
+
+        val erro = assertThrows(HttpClientResponseException::class.java) {
+            http.toBlocking().retrieve("/api/clientes/$idCliente/pix/$idPix")
+        }
+
+        assertEquals(HttpStatus.FORBIDDEN.code, erro.status.code)
+    }
+
+    @Test
+    fun `testa busca lista de chaves vazia`() {
+        val idCliente = UUID.randomUUID().toString()
+        val response = ListKeyResponse.newBuilder().build()
+        BDDMockito.given(rpc.list(Mockito.any())).willReturn(response)
+
+        val result = http.toBlocking().retrieve("/api/clientes/$idCliente/pix")
+        val keyList = mapper.readValue(result, mutableListOf<Chave>().javaClass)
+
+        assertEquals(0, keyList.size)
+    }
+
+    @Test
+    fun `testa busca lista de duas chaves`() {
+        val idCliente = UUID.randomUUID().toString()
+
+        val responseBuilder = GetKeyResponse.newBuilder()
+            .setChave(UUID.randomUUID().toString())
+            .setCriadaEm(LocalDateTime.now().toString())
+            .setIdCliente(idCliente)
+            .setIdPix(Random.nextLong())
+            .setTipoChave(TipoChave.RANDOM)
+            .setTitular(
+                GetKeyResponse.Titular.newBuilder()
+                    .setNome("Nome")
+                    .setCpf("CPF")
+                    .build()
+            ).setInstituicao(
+                GetKeyResponse.Instituicao.newBuilder()
+                    .setTipoConta(TipoConta.CONTA_CORRENTE)
+                    .setNome("Instituição")
+                    .setConta("Conta")
+                    .setAgencia("Agencia")
+                    .build()
+            )
+
+        val chave1 = responseBuilder.build()
+
+        val chave2 = responseBuilder
+            .setChave(UUID.randomUUID().toString())
+            .setCriadaEm(LocalDateTime.now().toString())
+            .setIdPix(Random.nextLong())
+            .build()
+
+        val response = ListKeyResponse.newBuilder().addAllChaves(listOf(chave1, chave2)).build()
+
+        BDDMockito.given(rpc.list(Mockito.any())).willReturn(response)
+
+        val result = http.toBlocking().retrieve("/api/clientes/$idCliente/pix")
+        val typeref = object : TypeReference<List<Chave>>() {}
+        val keyList: List<Chave> = mapper.readValue(result, typeref)
+
+        assertEquals(2, keyList.size)
+        assertEquals(1, keyList.filter { it.idPix == chave1.idPix }.size)
+        assertEquals(1, keyList.filter { it.idPix == chave2.idPix }.size)
+    }
+
+    @Test
+    fun `testa falha busca cliente inexistente`() {
+        val idCliente = UUID.randomUUID().toString()
+
+        BDDMockito.given(rpc.list(Mockito.any())).willThrow(Status.NOT_FOUND.asRuntimeException())
+
+        val erro = assertThrows(HttpClientResponseException::class.java) {
+            http.toBlocking().retrieve("/api/clientes/$idCliente/pix")
+        }
+
+        assertEquals(HttpStatus.NOT_FOUND.code, erro.status.code)
     }
 
     @Factory
