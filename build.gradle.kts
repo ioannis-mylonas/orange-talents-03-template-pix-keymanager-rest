@@ -43,6 +43,8 @@ dependencies {
     runtimeOnly("com.fasterxml.jackson.module:jackson-module-kotlin")
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.0-M1")
     implementation("io.micronaut.grpc:micronaut-grpc-client-runtime:2.4.0")
+    testImplementation("org.mockito:mockito-core:3.9.0")
+    testImplementation("org.mockito:mockito-inline:3.9.0")
 }
 
 

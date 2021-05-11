@@ -20,10 +20,11 @@ class ChaveController(
     ) {
 
     @Post
-    fun cadastra(@Body @Valid request: CriaChaveRequest, @PathVariable id: UUID): HttpResponse<*> {
+    fun cadastra(@Body @Valid request: CriaChaveRequest, @PathVariable id: UUID): HttpResponse<Any> {
         return try {
             val response = rpc.cria(request.converte(id))
-            HttpResponse.ok<Any>("PIX ID: ${response.idPix}")
+            val location = HttpResponse.uri("/api/clientes/$id/pix/${response.idPix}")
+            HttpResponse.created(location)
         } catch (e: StatusRuntimeException) {
             return statusMapper.map(e)
         }

@@ -7,7 +7,7 @@ import javax.inject.Singleton
 
 @Singleton
 class StatusRuntimeExceptionMapper {
-    fun map(e: StatusRuntimeException): HttpResponse<*> {
+    fun map(e: StatusRuntimeException): HttpResponse<Any> {
         return when (e.status.code) {
             Status.NOT_FOUND.code -> HttpResponse.notFound(e.message)
             Status.PERMISSION_DENIED.code -> HttpResponse.unauthorized<Any>().body(e.message)
