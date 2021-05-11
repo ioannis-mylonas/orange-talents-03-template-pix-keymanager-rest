@@ -43,11 +43,10 @@ internal class ChaveControllerTest {
         Mockito.reset(rpc)
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = ["14312464090", "54158613000", "18423574091", "17459891029"])
-    fun `testa cadastro chave valida`(key: String) {
+    @Test
+    fun `testa cadastro chave valida`() {
         val idCliente = UUID.randomUUID().toString()
-        val request = CriaChaveRequest(TipoChaveRequest.CPF, TipoContaRequest.CONTA_CORRENTE, key)
+        val request = CriaChaveRequest(TipoChaveRequest.CPF, TipoContaRequest.CONTA_CORRENTE, "14312464090")
 
         val response = CreateKeyResponse.newBuilder().setIdPix(1L).build()
         BDDMockito.given(rpc.cria(Mockito.any())).willReturn(response)
