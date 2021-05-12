@@ -1,0 +1,59 @@
+# SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+    name: external-service
+spec:
+    type: NodePort
+    ports:
+        - port: 8082
+          name: bcb-port
+        
+        - port: 9091
+          name: erp-port
+    selector:
+        network: external
+---
+# DEPLOYMENT BCB
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: bcb-deployment
+spec:
+    selector:
+        matchLabels:
+            app: bcb
+    template:
+        metadata:
+            name: bcb-container
+            labels:
+                app: bcb
+                network: external
+        spec:
+            containers:
+                - name: bcb-container
+                  image: "public.ecr.aws/d8b2x5c9/orange-stack-sat-bcb-pix"
+                  ports:
+                    - containerPort: 8082
+---
+# DEPLOYMENT ERP
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: erp-deployment
+spec:
+    selector:
+        matchLabels:
+            app: erp
+    template:
+        metadata:
+            name: erp-container
+            labels:
+                app: erp
+                network: external
+        spec:
+            containers:
+                - name: erp-container
+                  image: "public.ecr.aws/d8b2x5c9/orange-stack-sat-itau-erp"
+                  ports:
+                    - containerPort: 9091

@@ -1,0 +1,34 @@
+# ENVIRONMENT
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: keycloak-db-configmap
+data:
+    POSTGRES_USER: keycloak
+    POSTGRES_PASSWORD: password
+    POSTGRES_DB: keycloak
+    POSTGRES_HOST: postgres
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: keycloak-db-deployment
+spec:
+    selector:
+        matchLabels:
+            app: keycloak-db
+    template:
+        metadata:
+            name: keycloak-db-container
+            labels:
+                app: keycloak-db
+        spec:
+            containers:
+                - name: keycloak-db
+                image: postgres:alpine
+                ports:
+                    - containerPort: 5432
+                envFrom:
+                    - configMapRef:
+                        name: keycloak-db-configmap

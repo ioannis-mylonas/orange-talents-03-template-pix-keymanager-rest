@@ -1,0 +1,41 @@
+# ENVIRONMENT
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: keycloak-configmap
+data:
+    DB_VENDOR: postgres
+    DB_ADDR: postgres
+    DB_PORT: 5432
+    DB_DATABASE: keycloak
+    DB_USER: keycloak
+    DB_PASSWORD: password
+    KEYCLOAK_USER: admin
+    KEYCLOAK_PASSWORD: Pa55w0rd
+    POSTGRES_PORT_5432_TCP_ADDR: keycloak-db
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: keycloak-deployment
+spec:
+    selector:
+        matchLabels:
+            app: keycloak
+    template:
+        metadata:
+            name: keycloak-container
+            labels:
+                app: keycloak
+        spec:
+            containers:
+                - name: keycloak-container
+                image: jboss/keycloak
+                ports:
+                    - containerPort: 8443
+                    - containerPort: 8080
+                    - containerPort: 9990
+                envFrom:
+                    - configMapRef:
+                        name: keycloak-configmap

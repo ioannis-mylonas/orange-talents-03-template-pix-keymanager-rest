@@ -1,0 +1,38 @@
+# ENVIRONMENT
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: jaeger-configmap
+data:
+    COLLECTOR_ZIPKIN_HTTP_PORT: 9411
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: jaeger-container
+spec:
+    selector:
+        matchLabels:
+            app: jaeger
+    template:
+        metadata:
+            name: jaeger-container
+            labels:
+                app: jaeger
+        spec:
+            containers:
+                - name: jaeger-container
+                image: jaegertracing/all-in-one
+                ports:
+                    - containerPort: 5775/udp
+                    - containerPort: 6831/udp
+                    - containerPort: 6832/udp
+                    - containerPort: 5778
+                    - containerPort: 16686
+                    - containerPort: 14268
+                    - containerPort: 14250
+                    - containerPort: 9411
+                envFrom:
+                    - configMapRef:
+                        name: jaeger-configmap

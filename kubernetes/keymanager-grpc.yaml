@@ -1,0 +1,48 @@
+# SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+    name: keymanager-grpc-service
+spec:
+    type: ClusterIP
+    ports:
+        - port: 50051
+    selector:
+        app: keymanager-grpc
+---
+# ENVIRONMENT
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: keymanager-grpc-configmap
+data:
+    DB_URL: "jdbc:postgresql://keymanager-db-service:5432/pix"
+    DB_USER: "keymanager"
+    DB_PASS: "123456"
+    ERP_URL: "http://external-service:9091"
+    BCB_URL: "http://external-service:8082"
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: keymanager-grpc-deployment
+spec:
+    selector:
+        matchLabels:
+            app: keymanager-grpc
+    template:
+        metadata:
+            name: keymanager-grpc
+            labels:
+                app: keymanager-grpc
+        spec:
+            containers:
+                - name: keymanager-grpc-container
+                  image: ioannism/keymanager-grpc
+                  imagePullPolicy: Never
+                  ports:
+                    - containerPort: 50051
+                  envFrom:
+                    - configMapRef:
+                        name: keymanager-grpc-configmap

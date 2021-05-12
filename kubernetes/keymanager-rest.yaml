@@ -1,0 +1,44 @@
+# SERVICE
+apiVersion: v1
+kind: Service
+metadata:
+    name: keymanager-rest-service
+spec:
+    type: NodePort
+    ports:
+        - port: 8080
+    selector:
+        app: keymanager-rest
+---
+# ENVIRONMENT
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: keymanager-rest-configmap
+data:
+    KEYMANAGER_SERVER: "keymanager-grpc-service:50051"
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: keymanager-rest-deployment
+spec:
+    selector:
+        matchLabels:
+            app: keymanager-rest
+    template:
+        metadata:
+            name: keymanager-rest
+            labels:
+                app: keymanager-rest
+        spec:
+            containers:
+                - name: keymanager-rest-container
+                  image: ioannism/keymanager-rest
+                  imagePullPolicy: Never
+                  ports:
+                    - containerPort: 8080
+                  envFrom:
+                    - configMapRef:
+                        name: keymanager-rest-configmap

@@ -1,0 +1,31 @@
+# ENVIRONMENT
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: zookeeper-configmap
+data:
+    ZOOKEEPER_CLIENT_PORT: 2181
+    ZOOKEEPER_TICK_TIME: 2000
+    ZOOKEEPER_SYNC_LIMIT: 2
+---
+# DEPLOYMENT
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: zookeeper-deployment
+spec:
+    selector:
+        matchLabels:
+            app: zookeeper
+    template:
+        metadata:
+            name: zookeeper-container
+            labels:
+                app: zookeeper
+        spec:
+            containers:
+                - name: zookeeper-container
+                image: confluentinc/cp-zookeeper:5.2.1
+                envFrom:
+                    - configMapRef:
+                        name: zookeeper-configmap
