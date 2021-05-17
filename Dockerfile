@@ -1,4 +1,4 @@
-FROM openjdk:11.0.11-jdk
+FROM openjdk:11.0.11-jre
 COPY build/libs/keymanager-rest-0.1-all.jar /etc/keymanager-REST.jar
 WORKDIR /etc
 EXPOSE 8080

@@ -31,11 +31,11 @@ spec:
         spec:
             containers:
                 - name: keycloak-container
-                image: jboss/keycloak
-                ports:
+                  image: jboss/keycloak
+                  ports:
                     - containerPort: 8443
                     - containerPort: 8080
                     - containerPort: 9990
-                envFrom:
+                  envFrom:
                     - configMapRef:
                         name: keycloak-configmap

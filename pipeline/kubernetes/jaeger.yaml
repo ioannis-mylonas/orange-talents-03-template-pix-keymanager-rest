@@ -23,8 +23,8 @@ spec:
         spec:
             containers:
                 - name: jaeger-container
-                image: jaegertracing/all-in-one
-                ports:
+                  image: jaegertracing/all-in-one
+                  ports:
                     - containerPort: 5775/udp
                     - containerPort: 6831/udp
                     - containerPort: 6832/udp
@@ -33,6 +33,6 @@ spec:
                     - containerPort: 14268
                     - containerPort: 14250
                     - containerPort: 9411
-                envFrom:
+                  envFrom:
                     - configMapRef:
                         name: jaeger-configmap

@@ -26,9 +26,9 @@ spec:
         spec:
             containers:
                 - name: keycloak-db
-                image: postgres:alpine
-                ports:
+                  image: postgres:alpine
+                  ports:
                     - containerPort: 5432
-                envFrom:
+                  envFrom:
                     - configMapRef:
                         name: keycloak-db-configmap

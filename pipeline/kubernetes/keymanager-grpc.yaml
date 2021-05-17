@@ -10,17 +10,26 @@ spec:
     selector:
         app: keymanager-grpc
 ---
+# SECRET
+apiVersion: v1
+kind: Secret
+metadata:
+    name: keymanager-grpc-secret
+type: Opaque
+stringData:
+    DB_USER: "keymanager"
+    DB_PASSWORD: "123456"
+---
 # ENVIRONMENT
 apiVersion: v1
 kind: ConfigMap
 metadata:
     name: keymanager-grpc-configmap
 data:
-    DB_URL: "jdbc:postgresql://keymanager-db-service:5432/pix"
-    DB_USER: "keymanager"
-    DB_PASS: "123456"
-    ERP_URL: "http://external-service:9091"
-    BCB_URL: "http://external-service:8082"
+    DB_URI: "jdbc:postgresql://external-pix-services:5432/pix"
+    ITAU_URL: "http://external-pix-services:9091"
+    BCB_URL: "http://external-pix-services:8082"
+    DB_DIALECT: "POSTGRES"
 ---
 # DEPLOYMENT
 apiVersion: apps/v1
@@ -46,3 +55,5 @@ spec:
                   envFrom:
                     - configMapRef:
                         name: keymanager-grpc-configmap
+                    - secretRef:
+                        name: keymanager-grpc-secret

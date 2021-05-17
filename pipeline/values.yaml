@@ -1,0 +1,1 @@
+KEYMANAGER_SERVER: "rpc-keymanager-grpc-service:50051"
