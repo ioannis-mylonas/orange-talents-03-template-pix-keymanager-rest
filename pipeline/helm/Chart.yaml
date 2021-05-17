@@ -1,6 +1,10 @@
 apiVersion: v2
 name: keymanager-rest
 description: REST gateway para serviços PIX.
+dependencies:
+  - name: keymanager-grpc
+    version: "0.1.0"
+    repository: "file://../../../keymanager-grpc/pipeline/helm"
 
 # A chart can be either an 'application' or a 'library' chart.
 #

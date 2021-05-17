@@ -1,0 +1,6 @@
+dependencies:
+- name: keymanager-grpc
+  repository: file://../../../keymanager-grpc/pipeline/helm
+  version: 0.1.0
+digest: sha256:df0a4038de65f8119e5c7f102bcdc372fa23165cd083fc5fe6ad2b19df4fd8b2
+generated: "2021-05-17T16:17:16.5651139-03:00"
