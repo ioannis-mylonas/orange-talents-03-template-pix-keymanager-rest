@@ -31,6 +31,8 @@ micronaut {
 }
 
 dependencies {
+    kapt("io.micronaut.openapi:micronaut-openapi:2.5.0")
+    implementation("io.swagger.core.v3:swagger-annotations:2.1.9")
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-runtime")
     implementation("io.micronaut:micronaut-management")
@@ -54,6 +56,12 @@ application {
 }
 java {
     sourceCompatibility = JavaVersion.toVersion("11")
+}
+
+kapt {
+    arguments {
+        arg("micronaut.openapi.views.spec", "swagger-ui.enabled=true,swagger-ui.theme=flattop")
+    }
 }
 
 sourceSets {
